@@ -37,7 +37,8 @@ class _ChnrViewState extends State<ChnrView> {
               leading: Center(
                   child: Text(
                 widget.name!,
-                style: TextStyle(fontSize: screenWidth(14)),
+                style:
+                    TextStyle(fontSize: screenWidth(14), color: Colors.white),
               )),
             ),
             backgroundColor: AppColors.mainBackColor,

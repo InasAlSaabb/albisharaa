@@ -1,5 +1,7 @@
+import 'package:albisharaa/core/data/models/apis/list_asfar_model.dart';
 import 'package:albisharaa/ui/shared/colors.dart';
 import 'package:albisharaa/ui/shared/utils.dart';
+import 'package:albisharaa/ui/views/bible_screen/bible_controller.dart';
 import 'package:albisharaa/ui/views/chnr_view/chnr_view.dart';
 import 'package:albisharaa/ui/views/m_view/m_controller.dart';
 import 'package:albisharaa/ui/views/search_view/search_view.dart';
@@ -19,6 +21,7 @@ class MView extends StatefulWidget {
 
 class _MViewState extends State<MView> {
   late Mcontroller controllerr;
+  BibleController cc = Get.put(BibleController());
   Future<bool> checkAndInsert(int id, Map<String, dynamic> data) async {
     if (!await controllerr.sql.recordExists('asfar', id)) {
       await controllerr.sql.insert('asfar', data);
@@ -45,10 +48,16 @@ class _MViewState extends State<MView> {
         leading: Row(
           children: [
             IconButton(
-              icon: Icon(Icons.search), // أيقونة البحث
+              icon: Icon(
+                Icons.search,
+                color: Colors.white,
+                size: screenWidth(8),
+              ), // أيقونة البحث
               onPressed: () {
                 Get.to(ArabicSearchView(
-                  sss: controllerr.asfarListtt,
+                  sss: cc.translist
+                      .map((item) => asfarListModel(name: item.name))
+                      .toList(),
                 ));
                 // هنا يمكنك إضافة الكود الذي يقوم بفتح صفحة البحث أو تنفيذ أي إجراء
                 print('بحث تم الضغط عليه');
@@ -57,7 +66,8 @@ class _MViewState extends State<MView> {
             Center(
               child: Text(
                 widget.name!,
-                style: TextStyle(fontSize: screenWidth(16)),
+                style:
+                    TextStyle(fontSize: screenWidth(16), color: Colors.white),
               ),
             ),
           ],
@@ -84,9 +94,9 @@ class _MViewState extends State<MView> {
                           Expanded(
                             child: ListView.builder(
                               shrinkWrap: true,
-                              itemCount: controllerr.asfarListtt.length,
+                              itemCount: cc.translist.length,
                               itemBuilder: (BuildContext context, int index) {
-                                if (controllerr.asfarListtt[index].tp != 1) {
+                                if (cc.translist[index].tp != 1) {
                                   return SizedBox.shrink();
                                 }
                                 return buildListItem(index);
@@ -112,9 +122,9 @@ class _MViewState extends State<MView> {
                           Expanded(
                             child: ListView.builder(
                               shrinkWrap: true,
-                              itemCount: controllerr.asfarListtt.length,
+                              itemCount: cc.translist.length,
                               itemBuilder: (BuildContext context, int index) {
-                                if (controllerr.asfarListtt[index].tp != 2) {
+                                if (cc.translist[index].tp != 2) {
                                   return SizedBox.shrink();
                                 }
                                 return buildListItem(index);
@@ -150,14 +160,14 @@ class _MViewState extends State<MView> {
           child: InkWell(
             onTap: () {
               Get.to(ChnrView(
-                name: controllerr.asfarListtt[index].name,
+                name: cc.translist[index].name,
                 trans: widget.id,
-                hid: controllerr.asfarListtt[index].id,
-                ch: controllerr.asfarListtt[index].chrcnt,
+                hid: cc.translist[index].id,
+                ch: cc.translist[index].chrcnt,
               ));
             },
             child: Text(
-              controllerr.asfarListtt[index].name ?? "",
+              cc.translist[index].name ?? "",
               style: TextStyle(
                   fontSize: screenWidth(22),
                   fontWeight: FontWeight.bold,

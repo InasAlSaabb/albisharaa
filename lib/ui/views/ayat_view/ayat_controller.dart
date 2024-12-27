@@ -21,7 +21,7 @@ class AyatController extends BaseController {
   @override
   void onInit() {
     super.onInit();
-    fetchData(ch: ch!);
+    // fetchData(ch: ch!);
   }
 
   Future<void> fetchData({required int ch}) async {

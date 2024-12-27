@@ -1,6 +1,7 @@
 import 'package:albisharaa/ui/shared/colors.dart';
 import 'package:albisharaa/ui/shared/utils.dart';
 import 'package:albisharaa/ui/views/ayat_view/ayat_controller.dart';
+import 'package:albisharaa/ui/views/bible_screen/bible_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
@@ -17,7 +18,7 @@ class AyatView extends StatefulWidget {
 
 class _AyatViewState extends State<AyatView> {
   late AyatController controllerr;
-
+  BibleController cc = Get.put(BibleController());
   Future<bool> checkAndInsert(int id, Map<String, dynamic> data) async {
     if (!await controllerr.sql.recordExists('ayat', id)) {
       await controllerr.sql.insert('ayat', data);
@@ -53,23 +54,24 @@ class _AyatViewState extends State<AyatView> {
                               ListView.builder(
                                 physics: const NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount: controllerr.ayatListtt.length,
+                                itemCount:
+                                    cc.translist[0].chapters![0].verses!.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  final ayat = controllerr.ayatListtt[index];
+                                  // final ayat = controllerr.ayatListtt[index];
 
-                                  // تحقق من أن id غير null قبل استخدامه
-                                  if (ayat.id != null) {
-                                    checkAndInsert(ayat.id!, {
-                                      "id": ayat.id,
-                                      "sfrnr": ayat.sfrnr,
-                                      "hid": ayat.hid,
-                                      "chnr": ayat.chnr,
-                                      "vnumber": ayat.vnumber,
-                                      "textch": ayat.textch,
-                                      "tid": ayat.tid,
-                                      "trans": controllerr.trans ?? "",
-                                    });
-                                  }
+                                  // // تحقق من أن id غير null قبل استخدامه
+                                  // if (ayat.id != null) {
+                                  //   checkAndInsert(ayat.id!, {
+                                  //     "id": ayat.id,
+                                  //     "sfrnr": ayat.sfrnr,
+                                  //     "hid": ayat.hid,
+                                  //     "chnr": ayat.chnr,
+                                  //     "vnumber": ayat.vnumber,
+                                  //     "textch": ayat.textch,
+                                  //     "tid": ayat.tid,
+                                  //     "trans": controllerr.trans ?? "",
+                                  //   });
+                                  // }
 
                                   return Visibility(
                                     child: Container(
@@ -83,10 +85,13 @@ class _AyatViewState extends State<AyatView> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              if (ayat.tid != null)
+                                              if (cc.translist[0].chapters![0]
+                                                      .verses![index].tid !=
+                                                  null)
                                                 Center(
                                                   child: Text(
-                                                    ayat.tid!,
+                                                    cc.translist[0].chapters![0]
+                                                        .verses![index].tid!,
                                                     style: TextStyle(
                                                       color: AppColors
                                                           .mainOrangeColor,
@@ -108,7 +113,7 @@ class _AyatViewState extends State<AyatView> {
                                                           width:
                                                               screenWidth(18)),
                                                       Text(
-                                                        "${ayat.vnumber ?? ""}:", // إضافة الرقم هنا
+                                                        "${cc.translist[0].chapters![0].verses![index].vnumber ?? ""}:", // إضافة الرقم هنا
                                                         style: TextStyle(
                                                           fontSize:
                                                               screenWidth(20),
@@ -131,7 +136,12 @@ class _AyatViewState extends State<AyatView> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          ayat.textch ??
+                                                          cc
+                                                                  .translist[0]
+                                                                  .chapters![0]
+                                                                  .verses![
+                                                                      index]
+                                                                  .textch ??
                                                               "", // استخدم قيمة افتراضية
                                                           style: TextStyle(
                                                             fontSize:

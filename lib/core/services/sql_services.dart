@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 
 class SqlDb {
   static Database? _db;
+
   Future<Database?> get db async {
     if (_db == null) {
       _db = await initialDb();
@@ -15,7 +16,7 @@ class SqlDb {
 
   initialDb() async {
     String databasepath = await getDatabasesPath();
-    String path = join(databasepath, 'albishara.db');
+    String path = join(databasepath, 'albisharaa.db');
     Database mydb = await openDatabase(path,
         onCreate: _onCreate, version: 5, onUpgrade: _onUpgrade);
     return mydb;
@@ -27,7 +28,7 @@ class SqlDb {
 
   _onCreate(Database db, int version) async {
     Batch batch = db.batch();
-    //exexec one time
+
     batch.execute('''
       CREATE TABLE "trans" (
         "id" INTEGER PRIMARY KEY,
@@ -50,7 +51,7 @@ class SqlDb {
 
     batch.execute('''
       CREATE TABLE "verses" (
-        "id" INTEGER,
+        "id" INTEGER PRIMARY KEY,
         "sfrnr" INTEGER,
         "hid" TEXT,
         "chnr" INTEGER,
@@ -62,60 +63,112 @@ class SqlDb {
         FOREIGN KEY (chnr) REFERENCES chapters(chnr)
       )
     ''');
+
     batch.execute('''
-CREATE TABLE "asfar"(
-"id" INTEGER ,
-"name" TEXT ,
-"tp" INTEGER,
-"basl" TEXT ,
-"chrcnt" INTEGER ,
-"kaComp" INTEGER
-)
-        ''');
-    batch.commit();
-    print("CREATE ********************");
+      CREATE TABLE "asfar" (
+        "id" INTEGER,
+        "name" TEXT,
+        "tp" INTEGER,
+        "basl" TEXT,
+        "chrcnt" INTEGER,
+        "kaComp" INTEGER
+      )
+    ''');
+
+    batch.execute('''
+      CREATE TABLE "ayat" (
+        "id" INTEGER,
+        "sfrnr" INTEGER,
+        "hid" TEXT,
+        "chnr" INTEGER,
+        "vnumber" INTEGER,
+        "textch" TEXT,
+        "tid" TEXT,
+        "trans" TEXT
+      )
+    ''');
+
+    await batch.commit();
+    print("CREATE **********yes**********");
   }
 
+  // Original methods
   Future<List<Map<String, dynamic>>> readData(
-    String sql,
-    List<Object> params,
-  ) async {
-    // Get the database instance
+      String sql, List<Object> params) async {
     Database? mydb = await db;
-
     List<Map<String, dynamic>> response = await mydb!.rawQuery(sql, params);
-
-    print("read***********");
-
     return response;
   }
 
-  insertData(String sql) async {
+  Future<int> insertData(String sql) async {
     Database? mydb = await db;
     int response = await mydb!.rawInsert(sql);
     return response;
   }
 
-  Future<bool> recordExists(String table, int id) async {
+  // New methods from the code to merge
+  static Future<void> saveVerses(List<VerseModel> verses) async {
+    final database = await _db;
+    final batch = database!.batch();
+
+    for (var verse in verses) {
+      batch.insert('verses', {
+        'id': verse.id,
+        'sfrnr': verse.sfrnr,
+        'hid': verse.hid,
+        'chnr': verse.chnr,
+        'vnumber': verse.vnumber,
+        'textch': verse.textch,
+        'tid': verse.tid,
+      });
+    }
+
+    await batch.commit();
+    print("CREATE ************************************");
+  }
+
+  Future<List<VerseModel>> searchVerses(String searchTerm, int sefrId) async {
     Database? mydb = await db;
-    List<Map<String, dynamic>> result = await mydb!.query(
-      table,
-      where: 'id = ?',
-      whereArgs: [id],
+    final results = await mydb!.query(
+      'verses',
+      where: 'sfrnr = ? AND textch LIKE ?',
+      whereArgs: [sefrId, '%$searchTerm%'],
     );
-    return result.isNotEmpty;
+    return results.map((map) => VerseModel.fromJson(map)).toList();
   }
 
-  mydeletDatabase() async {
-    String databasepath = await getDatabasesPath();
-    String path = join(databasepath, 'inas.db');
-    await deleteDatabase(path);
-  }
-
-  read(String table) async {
+  Future<List<VerseModel>> searchALLVerses(String searchTerm) async {
     Database? mydb = await db;
-    List<Map> response = await mydb!.query(table);
-    return response.toSet();
+    final results = await mydb!.query(
+      'verses',
+      where: 'textch LIKE ?',
+      whereArgs: ['%$searchTerm%'],
+    );
+    return results.map((map) => VerseModel.fromJson(map)).toList();
+  }
+
+  Future<List<VerseModel>> searchAllBooks(String searchText) async {
+    Database? mydb = await db;
+    final results = await mydb!.rawQuery(
+        'SELECT verses.* FROM verses INNER JOIN trans ON verses.id = trans.id WHERE textch LIKE ?',
+        ['%$searchText%']);
+    return results.map((map) => VerseModel.fromJson(map)).toList();
+  }
+
+  Future<List<VerseModel>> searchOldTestament(String searchText) async {
+    Database? mydb = await db;
+    final results = await mydb!.rawQuery(
+        'SELECT verses.* FROM verses INNER JOIN trans ON verses.sfrnr = trans.id WHERE verses.textch LIKE ? AND trans.tp = 1',
+        ['%$searchText%']);
+    return results.map((map) => VerseModel.fromJson(map)).toList();
+  }
+
+  Future<List<VerseModel>> searchNewTestament(String searchText) async {
+    Database? mydb = await db;
+    final results = await mydb!.rawQuery(
+        'SELECT verses.* FROM verses INNER JOIN trans ON verses.sfrnr = trans.id WHERE verses.textch LIKE ? AND trans.tp = 2',
+        ['%$searchText%']);
+    return results.map((map) => VerseModel.fromJson(map)).toList();
   }
 
   readmod(
@@ -151,17 +204,13 @@ CREATE TABLE "asfar"(
     return response;
   }
 
-  Future<List<VerseModel>> searchOldTestament(String searchText) async {
-    final results = await _db!.rawQuery(
-        'SELECT verses.* FROM verses INNER JOIN trans ON verses.sfrnr = trans.id WHERE verses.textch LIKE ? AND trans.tp = 1',
-        ['%$searchText%']);
-    return results.map((map) => VerseModel.fromJson(map)).toList();
-  }
-
-  Future<List<VerseModel>> searchNewTestament(String searchText) async {
-    final results = await _db!.rawQuery(
-        'SELECT verses.* FROM verses INNER JOIN trans ON verses.sfrnr = trans.id WHERE verses.textch LIKE ? AND trans.tp = 2',
-        ['%$searchText%']);
-    return results.map((map) => VerseModel.fromJson(map)).toList();
+  Future<bool> recordExists(String table, int id) async {
+    Database? mydb = await db;
+    List<Map<String, dynamic>> result = await mydb!.query(
+      table,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    return result.isNotEmpty;
   }
 }

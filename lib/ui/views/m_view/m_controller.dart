@@ -21,9 +21,6 @@ class Mcontroller extends BaseController {
   });
   @override
   void onInit() async {
-    // getAsfarList(id: id!);
-
-    fetchData();
     super.onInit();
   }
 

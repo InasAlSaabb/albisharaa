@@ -47,16 +47,7 @@ class _BibleViewState extends State<BibleView> {
               ),
               InkWell(
                 onTap: () async {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) =>
-                        const Center(child: CircularProgressIndicator()),
-                  );
-
-                  await controller.getTran(ch: "M");
-
-                  Navigator.pop(context); // إغلاق مؤشر التحميل
+                  await controller.getTran(ch: "V");
 
                   Get.to(() => MView(
                         name: "الترجمة المشتركة دار الكتاب المقدس",
