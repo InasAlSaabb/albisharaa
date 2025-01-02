@@ -1,7 +1,6 @@
 import 'package:albisharaa/ui/shared/colors.dart';
 import 'package:albisharaa/ui/shared/utils.dart';
 import 'package:albisharaa/ui/views/ayat_view/ayat_controller.dart';
-import 'package:albisharaa/ui/views/bible_screen/bible_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
@@ -18,7 +17,7 @@ class AyatView extends StatefulWidget {
 
 class _AyatViewState extends State<AyatView> {
   late AyatController controllerr;
-  BibleController cc = Get.put(BibleController());
+
   Future<bool> checkAndInsert(int id, Map<String, dynamic> data) async {
     if (!await controllerr.sql.recordExists('ayat', id)) {
       await controllerr.sql.insert('ayat', data);
@@ -54,24 +53,9 @@ class _AyatViewState extends State<AyatView> {
                               ListView.builder(
                                 physics: const NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount:
-                                    cc.translist[0].chapters![0].verses!.length,
+                                itemCount: controllerr.ayatListtt.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  // final ayat = controllerr.ayatListtt[index];
-
-                                  // // تحقق من أن id غير null قبل استخدامه
-                                  // if (ayat.id != null) {
-                                  //   checkAndInsert(ayat.id!, {
-                                  //     "id": ayat.id,
-                                  //     "sfrnr": ayat.sfrnr,
-                                  //     "hid": ayat.hid,
-                                  //     "chnr": ayat.chnr,
-                                  //     "vnumber": ayat.vnumber,
-                                  //     "textch": ayat.textch,
-                                  //     "tid": ayat.tid,
-                                  //     "trans": controllerr.trans ?? "",
-                                  //   });
-                                  // }
+                                  final ayat = controllerr.ayatListtt[index];
 
                                   return Visibility(
                                     child: Container(
@@ -85,13 +69,10 @@ class _AyatViewState extends State<AyatView> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              if (cc.translist[0].chapters![0]
-                                                      .verses![index].tid !=
-                                                  null)
+                                              if (ayat.tid != null)
                                                 Center(
                                                   child: Text(
-                                                    cc.translist[0].chapters![0]
-                                                        .verses![index].tid!,
+                                                    ayat.tid!,
                                                     style: TextStyle(
                                                       color: AppColors
                                                           .mainOrangeColor,
@@ -113,7 +94,7 @@ class _AyatViewState extends State<AyatView> {
                                                           width:
                                                               screenWidth(18)),
                                                       Text(
-                                                        "${cc.translist[0].chapters![0].verses![index].vnumber ?? ""}:", // إضافة الرقم هنا
+                                                        "${ayat.vnumber ?? ""}:", // إضافة الرقم هنا
                                                         style: TextStyle(
                                                           fontSize:
                                                               screenWidth(20),
@@ -136,12 +117,7 @@ class _AyatViewState extends State<AyatView> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          cc
-                                                                  .translist[0]
-                                                                  .chapters![0]
-                                                                  .verses![
-                                                                      index]
-                                                                  .textch ??
+                                                          ayat.textch ??
                                                               "", // استخدم قيمة افتراضية
                                                           style: TextStyle(
                                                             fontSize:
@@ -183,7 +159,10 @@ class _AyatViewState extends State<AyatView> {
                             controllerr.ch = (controllerr.ch! - 1)
                                 .clamp(1, double.infinity)
                                 .toInt(); // تأكد من أن القيمة لا تقل عن 1
-                            controllerr.fetchData(ch: controllerr.ch!);
+                            controllerr.getVersesFromDatabase(
+                                chnr: controllerr.ch!,
+                                sfrnr: controllerr.hid!,
+                                trans: controllerr.trans!);
                           });
                         },
                         child: Text(
@@ -206,7 +185,10 @@ class _AyatViewState extends State<AyatView> {
                           setState(() {
                             // تحديث قيمة controllerr.ch قبل تمريرها
                             controllerr.ch = (controllerr.ch! + 1).toInt();
-                            controllerr.fetchData(ch: controllerr.ch!);
+                            controllerr.getVersesFromDatabase(
+                                chnr: controllerr.ch!,
+                                sfrnr: controllerr.hid!,
+                                trans: controllerr.trans!);
                           });
                         },
                         child: Text(

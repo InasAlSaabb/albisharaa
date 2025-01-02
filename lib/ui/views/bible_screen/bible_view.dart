@@ -47,7 +47,7 @@ class _BibleViewState extends State<BibleView> {
               ),
               InkWell(
                 onTap: () async {
-                  await controller.getTran(ch: "V");
+                  await controller.getTran(ch: "M");
 
                   Get.to(() => MView(
                         name: "الترجمة المشتركة دار الكتاب المقدس",
