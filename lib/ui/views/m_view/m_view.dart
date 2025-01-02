@@ -56,7 +56,8 @@ class _MViewState extends State<MView> {
               onPressed: () {
                 Get.to(ArabicSearchView(
                   sss: cc.translist
-                      .map((item) => asfarListModel(name: item.name))
+                      .map((item) =>
+                          asfarListModel(name: item.name, id: item.id))
                       .toList(),
                 ));
                 // هنا يمكنك إضافة الكود الذي يقوم بفتح صفحة البحث أو تنفيذ أي إجراء

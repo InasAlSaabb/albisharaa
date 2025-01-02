@@ -23,29 +23,42 @@ class AyatController extends BaseController {
 
   Future<void> getVersesFromDatabase(
       {required int sfrnr, required int chnr, required String trans}) async {
-    // First check all verses
-    final allVerses = await sql.readData('SELECT * FROM verses', []);
-    print("Total verses in database: ${allVerses.length}");
-    if (allVerses.isNotEmpty) {
-      print("Sample verse: ${allVerses.first}");
-    }
+    // Set loading state at start
+    requestStatus.value = RequestStatus.LOADING;
 
-    // Then check with specific filters
-    final results = await sql.readData(
-        'SELECT * FROM verses WHERE sfrnr=? AND chnr=? AND trans=?',
-        [hid!, ch!, trans!]);
+    try {
+      // First check all verses
+      final allVerses = await sql.readData('SELECT * FROM verses', []);
+      print("Total verses in database: ${allVerses.length}");
+      if (allVerses.isNotEmpty) {
+        print("Sample verse: ${allVerses.first}");
+      }
 
-    print("Filtered verses count: ${results.length}");
-    print("Using filters: sfrnr=$hid, chnr=$ch, trans=$trans");
+      // Then check with specific filters
+      final results = await sql.readData(
+          'SELECT * FROM verses WHERE sfrnr=? AND chnr=? AND trans=?',
+          [hid!, ch!, trans!]);
 
-    if (results.isNotEmpty) {
-      ayatListtt.value =
-          results.map((item) => AyatModel.fromJson(item)).toList();
+      print("Filtered verses count: ${results.length}");
+      print("Using filters: sfrnr=$hid, chnr=$ch, trans=$trans");
+
+      if (results.isNotEmpty) {
+        ayatListtt.value =
+            results.map((item) => AyatModel.fromJson(item)).toList();
+        CustomToast.showMessage(
+            message: "تم تحميل الآيات بنجاح", messageType: MessageType.SUCCESS);
+        requestStatus.value = RequestStatus.SUCCESS;
+      } else {
+        CustomToast.showMessage(
+            message: "لم يتم العثور على آيات",
+            messageType: MessageType.REJECTED);
+        requestStatus.value = RequestStatus.ERROR;
+      }
+    } catch (e) {
+      requestStatus.value = RequestStatus.ERROR;
       CustomToast.showMessage(
-          message: "تم تحميل الآيات بنجاح", messageType: MessageType.SUCCESS);
-    } else {
-      CustomToast.showMessage(
-          message: "لم يتم العثور على آيات", messageType: MessageType.REJECTED);
+          message: "حدث خطأ في تحميل الآيات",
+          messageType: MessageType.REJECTED);
     }
   }
 
